@@ -4,37 +4,32 @@ const admin = require("firebase-admin");
 
 const app = express();
 
-// 🔥 Firebase Initialize
+// Firebase Init
 admin.initializeApp({
   credential: admin.credential.cert(
     JSON.parse(process.env.FIREBASE_KEY)
   ),
 });
 
-const db = admin.firestore();
-
 app.use(cors());
 app.use(express.json());
 
-// ✅ Import Routes
+// Routes
 const userRoutes = require("./routes/userRoutes");
-const adminRoutes = require("./routes/adminRoutes");
 const cartRoutes = require("./routes/cartRoutes");
-const productRoutes = require("./routes/productRoutes"); // ✅ Added
+const productRoutes = require("./routes/productRoutes");
+const adminRoutes = require("./routes/adminRoutes");
 
-// ✅ Use Routes
 app.use("/api/users", userRoutes);
-app.use("/api/admin", adminRoutes);
 app.use("/api/cart", cartRoutes);
-app.use("/api/products", productRoutes); // ✅ Added
+app.use("/api/products", productRoutes);
+app.use("/api/admin", adminRoutes);
 
-// Root Test
 app.get("/", (req, res) => {
-  res.send("Backend is running successfully 🚀");
+  res.send("Backend running successfully 🚀");
 });
 
-const PORT = process.env.PORT || 8080;
-
+const PORT = process.env.PORT || 8000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
