@@ -1,6 +1,15 @@
 const express = require("express");
 const app = express();
 
+const admin = require("firebase-admin");
+
+// 🔥 Initialize Firebase
+admin.initializeApp({
+  credential: admin.credential.cert(
+    JSON.parse(process.env.FIREBASE_KEY)
+  )
+});
+
 app.use(express.json());
 
 // Import routes
@@ -13,7 +22,7 @@ app.use("/api/admin", adminRoutes);
 
 // Root test
 app.get("/", (req, res) => {
-  res.send("Backend is running successfully ✅");
+  res.send("Backend is running successfully");
 });
 
 const PORT = process.env.PORT || 8080;
