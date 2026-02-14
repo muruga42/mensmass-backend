@@ -1,12 +1,13 @@
 {
   "name": "mensmass-backend",
   "version": "1.0.0",
-  "description": "Express backend for Railway",
+  "description": "Express backend",
   "main": "index.js",
   "scripts": {
     "start": "node index.js"
   },
   "dependencies": {
-    "express": "^4.18.2"
+    "express": "^4.18.2",
+    "firebase-admin": "^12.0.0"
   }
 }
