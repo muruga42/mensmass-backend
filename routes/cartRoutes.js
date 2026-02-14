@@ -5,7 +5,10 @@ const admin = require("firebase-admin");
 const db = admin.firestore();
 
 /*
+-----------------------------------------
 GET - Get user cart
+URL: /api/cart/:userId
+-----------------------------------------
 */
 router.get("/:userId", async (req, res) => {
   try {
@@ -17,9 +20,9 @@ router.get("/:userId", async (req, res) => {
       .collection("items")
       .get();
 
-    const cartItems = snapshot.docs.map(doc => ({
+    const cartItems = snapshot.docs.map((doc) => ({
       id: doc.id,
-      ...doc.data()
+      ...doc.data(),
     }));
 
     res.json(cartItems);
@@ -29,35 +32,40 @@ router.get("/:userId", async (req, res) => {
 });
 
 /*
-POST - Add item to cart
+-----------------------------------------
+POST - Add product to cart
+URL: /api/cart/add
+-----------------------------------------
 */
-router.post("/:userId", async (req, res) => {
+router.post("/add", async (req, res) => {
   try {
-    const { userId } = req.params;
-    const { productId, name, price, quantity } = req.body;
+    const { userId, productId, quantity } = req.body;
 
-    const cartItem = {
-      productId,
-      name,
-      price,
-      quantity,
-      addedAt: new Date()
-    };
+    if (!userId || !productId) {
+      return res.status(400).json({ message: "Missing userId or productId" });
+    }
 
     await db
       .collection("carts")
       .doc(userId)
       .collection("items")
-      .add(cartItem);
+      .add({
+        productId,
+        quantity: quantity || 1,
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
 
-    res.json({ message: "Item added to cart successfully" });
+    res.json({ message: "Product added to cart successfully" });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 });
 
 /*
+-----------------------------------------
 DELETE - Remove item from cart
+URL: /api/cart/:userId/:itemId
+-----------------------------------------
 */
 router.delete("/:userId/:itemId", async (req, res) => {
   try {
