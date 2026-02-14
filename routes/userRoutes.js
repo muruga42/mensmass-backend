@@ -1,27 +1,21 @@
 const express = require("express");
 const router = express.Router();
 const admin = require("firebase-admin");
-const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
 const db = admin.firestore();
-
-const JWT_SECRET = "your_secret_key"; // change later to env variable
+const JWT_SECRET = "your_secret_key";
 
 // REGISTER
 router.post("/register", async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    const newUser = {
+    await db.collection("users").add({
       email,
-      password: hashedPassword,
+      password,
       createdAt: new Date(),
-    };
-
-    const userRef = await db.collection("users").add(newUser);
+    });
 
     res.status(201).json({ message: "User registered successfully" });
   } catch (error) {
@@ -46,9 +40,7 @@ router.post("/login", async (req, res) => {
     const userDoc = snapshot.docs[0];
     const user = userDoc.data();
 
-    const isMatch = await bcrypt.compare(password, user.password);
-
-    if (!isMatch) {
+    if (password !== user.password) {
       return res.status(400).json({ message: "Invalid credentials" });
     }
 
@@ -66,9 +58,5 @@ router.post("/login", async (req, res) => {
         email: user.email,
       },
     });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
 
-module.exports = router;
+  } catch (error) {
