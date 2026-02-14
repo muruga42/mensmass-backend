@@ -6,24 +6,29 @@ const jwt = require("jsonwebtoken");
 const db = admin.firestore();
 const JWT_SECRET = "your_secret_key";
 
-// REGISTER
+// ================= REGISTER =================
 router.post("/register", async (req, res) => {
   try {
     const { email, password } = req.body;
 
     await db.collection("users").add({
-      email,
-      password,
+      email: email,
+      password: password,
       createdAt: new Date(),
     });
 
-    res.status(201).json({ message: "User registered successfully" });
+    return res.status(201).json({
+      message: "User registered successfully",
+    });
+
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    return res.status(500).json({
+      error: error.message,
+    });
   }
 });
 
-// LOGIN
+// ================= LOGIN =================
 router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -34,25 +39,32 @@ router.post("/login", async (req, res) => {
       .get();
 
     if (snapshot.empty) {
-      return res.status(400).json({ message: "User not found" });
+      return res.status(400).json({
+        message: "User not found",
+      });
     }
 
     const userDoc = snapshot.docs[0];
     const user = userDoc.data();
 
     if (password !== user.password) {
-      return res.status(400).json({ message: "Invalid credentials" });
+      return res.status(400).json({
+        message: "Invalid credentials",
+      });
     }
 
     const token = jwt.sign(
-      { id: userDoc.id, email: user.email },
+      {
+        id: userDoc.id,
+        email: user.email,
+      },
       JWT_SECRET,
       { expiresIn: "7d" }
     );
 
-    res.json({
+    return res.json({
       message: "Login successful",
-      token,
+      token: token,
       user: {
         id: userDoc.id,
         email: user.email,
@@ -60,3 +72,10 @@ router.post("/login", async (req, res) => {
     });
 
   } catch (error) {
+    return res.status(500).json({
+      error: error.message,
+    });
+  }
+});
+
+module.exports = router;
