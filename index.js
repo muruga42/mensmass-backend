@@ -2,32 +2,34 @@ const express = require("express");
 const app = express();
 const admin = require("firebase-admin");
 
-/// 🔥 Initialize Firebase
+// 🔥 Initialize Firebase
 admin.initializeApp({
   credential: admin.credential.cert(
     JSON.parse(process.env.FIREBASE_KEY)
-  )
+  ),
 });
 
+// Middleware
 app.use(express.json());
 
-/// ✅ Import Routes
+// ✅ Import Routes
 const userRoutes = require("./routes/userRoutes");
 const adminRoutes = require("./routes/adminRoutes");
 const productRoutes = require("./routes/productRoutes");
 const cartRoutes = require("./routes/cartRoutes");
 
-/// ✅ Use Routes
+// ✅ Use Routes
 app.use("/api/users", userRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/cart", cartRoutes);
 
-/// Root Test
+// Root Test
 app.get("/", (req, res) => {
-  res.send("Backend is running successfully 🚀");
+  res.send("Backend is running successfully");
 });
 
+// Server
 const PORT = process.env.PORT || 8080;
 
 app.listen(PORT, () => {
