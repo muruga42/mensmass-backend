@@ -1,11 +1,22 @@
 const express = require("express");
 const router = express.Router();
+const admin = require("firebase-admin");
 
-router.get("/", (req, res) => {
-  res.json([
-    { id: 1, name: "Muthuraja" },
-    { id: 2, name: "Test User" }
-  ]);
+const db = admin.firestore();
+
+router.get("/", async (req, res) => {
+  try {
+    const snapshot = await db.collection("users").get();
+
+    const users = snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+
+    res.json(users);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 });
 
 module.exports = router;
