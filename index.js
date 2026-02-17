@@ -1,35 +1,76 @@
+require("dotenv").config();
+
 const express = require("express");
 const cors = require("cors");
+const Razorpay = require("razorpay");
 const admin = require("firebase-admin");
 
 const app = express();
 
-// Firebase Init
+/* ===============================
+   🔥 Firebase Init (ENV based)
+================================ */
 admin.initializeApp({
   credential: admin.credential.cert(
     JSON.parse(process.env.FIREBASE_KEY)
   ),
 });
 
+/* ===============================
+   ⚙️ Middlewares
+================================ */
 app.use(cors());
 app.use(express.json());
 
-// Routes
-const userRoutes = require("./routes/userRoutes");
-const cartRoutes = require("./routes/cartRoutes");
-const productRoutes = require("./routes/productRoutes");
-const adminRoutes = require("./routes/adminRoutes");
+/* ===============================
+   💳 Razorpay Init
+================================ */
+const razorpay = new Razorpay({
+  key_id: process.env.RAZORPAY_KEY_ID,
+  key_secret: process.env.RAZORPAY_KEY_SECRET,
+});
 
-app.use("/api/users", userRoutes);
-app.use("/api/cart", cartRoutes);
-app.use("/api/products", productRoutes);
-app.use("/api/admin", adminRoutes);
-
+/* ===============================
+   🚀 Health Check
+================================ */
 app.get("/", (req, res) => {
   res.send("Backend running successfully 🚀");
 });
 
+/* ===============================
+   🛒 Create Order Route
+================================ */
+app.post("/create-order", async (req, res) => {
+  try {
+    const { amount } = req.body;
+
+    if (!amount) {
+      return res.status(400).json({ error: "Amount is required" });
+    }
+
+    const options = {
+      amount: amount * 100, // convert to paise
+      currency: "INR",
+      receipt: `receipt_${Date.now()}`,
+    };
+
+    const order = await razorpay.orders.create(options);
+
+    res.json({
+      success: true,
+      order,
+    });
+  } catch (error) {
+    console.error("Order Error:", error);
+    res.status(500).json({ error: "Order creation failed" });
+  }
+});
+
+/* ===============================
+   🌍 Server Start
+================================ */
 const PORT = process.env.PORT || 8000;
+
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
